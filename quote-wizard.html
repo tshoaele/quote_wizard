@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quote Wizard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f3f5f6;
+    --panel:#ffffff;
+    --ink:#12181f;
+    --ink-soft:#5b6572;
+    --line:#dde2e6;
+    --accent:#0fb8a6;
+    --accent-ink:#063c37;
+    --accent-soft:#e2f7f4;
+    --danger:#c14b3f;
+    --danger-soft:#fbeae7;
+    --radius:4px;
+  }
+  [data-theme="dark"]{
+    --bg:#0b0f14;
+    --panel:#131a22;
+    --ink:#e7edf1;
+    --ink-soft:#8ea0ad;
+    --line:#233039;
+    --accent:#20e0c8;
+    --accent-ink:#04322c;
+    --accent-soft:#0f2b28;
+    --danger:#e07567;
+    --danger-soft:#2b1613;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Inter", -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
+    font-size:14px;
+    line-height:1.5;
+    transition:background .15s, color .15s;
+  }
+  h1,h2,.brand,.inv-title .num,.inv-biz-name{ font-family:"Rajdhani", sans-serif; }
+
+  .app{ display:grid; grid-template-columns:210px 1fr; min-height:100vh; }
+  .nav{
+    background:var(--accent-ink);
+    color:#d6f4ef;
+    padding:26px 0;
+    display:flex;
+    flex-direction:column;
+  }
+  [data-theme="dark"] .nav{ background:#070c10; }
+  .nav-brand{
+    font-family:"Rajdhani", sans-serif;
+    font-weight:700;
+    font-size:19px;
+    letter-spacing:0.03em;
+    padding:0 22px 22px 22px;
+    border-bottom:1px solid rgba(255,255,255,0.12);
+    margin-bottom:8px;
+    text-transform:uppercase;
+  }
+  .nav-brand span{
+    display:block;
+    font-family:"Inter", sans-serif;
+    text-transform:none;
+    font-weight:400;
+    font-size:11px;
+    color:#8fb6b0;
+    margin-top:3px;
+    letter-spacing:0.02em;
+  }
+  .nav button{
+    all:unset; cursor:pointer;
+    padding:13px 22px;
+    color:#a9cdc7;
+    font-size:13.5px;
+    border-left:3px solid transparent;
+  }
+  .nav button:hover{ color:#fff; }
+  .nav button.active{
+    color:#fff;
+    background:rgba(255,255,255,0.06);
+    border-left:3px solid var(--accent);
+  }
+  .nav-foot{
+    margin-top:auto;
+    padding:16px 22px 0 22px;
+    font-size:11px;
+    color:#6d938c;
+    border-top:1px solid rgba(255,255,255,0.1);
+  }
+  .theme-toggle{
+    margin:18px 22px 0 22px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
+    color:#a9cdc7;
+  }
+  .theme-toggle button{
+    all:unset; cursor:pointer;
+    width:34px; height:19px;
+    border-radius:20px;
+    background:rgba(255,255,255,0.18);
+    position:relative;
+    flex-shrink:0;
+  }
+  .theme-toggle button::after{
+    content:"";
+    position:absolute; top:2px; left:2px;
+    width:15px; height:15px; border-radius:50%;
+    background:var(--accent);
+    transition:transform .15s;
+  }
+  [data-theme="dark"] .theme-toggle button::after{ transform:translateX(15px); }
+
+  .main{ padding:32px 36px 60px 36px; max-width:1180px; position:relative; }
+  .view{ display:none; } .view.active{ display:block; }
+
+  h1{ font-weight:600; font-size:26px; margin:0 0 4px 0; letter-spacing:0.01em; }
+  .subhead{ color:var(--ink-soft); font-size:13px; margin-bottom:26px; }
+
+  .grid-two{ display:grid; grid-template-columns:1fr 1fr; gap:28px; align-items:start; }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:22px 24px;
+    margin-bottom:20px;
+  }
+  .panel h2{
+    font-family:"Rajdhani", sans-serif;
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--accent);
+    margin:0 0 16px 0;
+    font-weight:600;
+  }
+
+  label{ display:block; font-size:12px; color:var(--ink-soft); margin-bottom:4px; }
+  input[type=text], input[type=number], input[type=date], textarea, select{
+    width:100%; padding:8px 10px;
+    border:1px solid var(--line); border-radius:var(--radius);
+    font-size:13.5px; font-family:inherit;
+    color:var(--ink); background:var(--panel);
+  }
+  input:focus, textarea:focus, select:focus{ outline:none; border-color:var(--accent); }
+  textarea{ resize:vertical; min-height:56px; }
+  .field{ margin-bottom:14px; }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  .btn{
+    all:unset; cursor:pointer; display:inline-block;
+    padding:9px 16px; border-radius:var(--radius);
+    font-size:13px; font-weight:600; text-align:center;
+    font-family:"Rajdhani", sans-serif; letter-spacing:0.02em;
+  }
+  .btn-primary{ background:var(--accent); color:var(--accent-ink); }
+  .btn-primary:hover{ opacity:0.88; }
+  .btn-ghost{ background:transparent; border:1px solid var(--line); color:var(--ink); }
+  .btn-ghost:hover{ border-color:var(--accent); color:var(--accent); }
+  .btn-danger{ background:var(--danger-soft); color:var(--danger); }
+  .btn-row{ display:flex; gap:10px; margin-top:6px; flex-wrap:wrap; }
+  .btn-small{ padding:6px 11px; font-size:12px; }
+
+  .client-picker{ display:flex; gap:8px; }
+  .client-picker select{ flex:1; }
+
+  table.items{ width:100%; border-collapse:collapse; margin-bottom:10px; }
+  table.items th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.04em;
+    color:var(--ink-soft); font-weight:600; padding:0 6px 8px 6px; border-bottom:1px solid var(--line);
+  }
+  table.items td{ padding:6px; vertical-align:top; }
+  table.items input{ font-size:13px; padding:6px 8px; }
+  .col-desc{ width:46%; } .col-qty{ width:14%; } .col-price{ width:20%; }
+  .col-amt{ width:16%; text-align:right; padding-top:14px !important; font-variant-numeric:tabular-nums; }
+  .col-del{ width:4%; text-align:center; }
+  .row-del{ all:unset; cursor:pointer; color:var(--danger); font-size:15px; padding:4px; }
+
+  .totals{ display:flex; justify-content:flex-end; margin-top:8px; }
+  .totals-box{ width:220px; }
+  .totals-line{ display:flex; justify-content:space-between; padding:7px 0; font-size:14px; }
+  .totals-line.total{ border-top:1px solid var(--line); font-weight:700; font-size:16px; margin-top:2px; }
+
+  .preview-wrap{ position:sticky; top:24px; }
+  .quote-sheet{
+    background:#fdfdfc;
+    border:1px solid var(--line);
+    box-shadow:0 1px 3px rgba(0,0,0,0.08);
+    padding:38px 40px;
+    color:#161c1a;
+    min-height:400px;
+    position:relative;
+  }
+  [data-theme="dark"] .quote-sheet{ background:#0f1519; color:#dbe6e2; }
+  .inv-top{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    border-bottom:2px solid var(--accent); padding-bottom:16px; margin-bottom:20px;
+  }
+  .inv-biz-name{ font-size:20px; font-weight:700; letter-spacing:0.01em; }
+  .inv-biz-addr{ font-size:12px; color:var(--ink-soft); white-space:pre-line; margin-top:4px; line-height:1.5; }
+  .inv-title{ text-align:right; }
+  .inv-title .label{
+    font-family:"Rajdhani", sans-serif; text-transform:uppercase; letter-spacing:0.14em;
+    font-size:12px; color:var(--accent); font-weight:600;
+  }
+  .inv-title .num{ font-size:21px; font-weight:700; margin-top:2px; }
+  .inv-meta{ display:flex; justify-content:space-between; margin-bottom:22px; font-size:12.5px; }
+  .inv-meta div div{ margin-bottom:3px; }
+  .inv-meta .k{ text-transform:uppercase; font-size:10.5px; letter-spacing:0.05em; color:var(--ink-soft); }
+  .valid-flag{
+    display:inline-block; margin-top:6px; font-size:11px; font-weight:600;
+    padding:3px 9px; border-radius:12px; background:var(--accent-soft); color:var(--accent-ink);
+    font-family:"Rajdhani", sans-serif; letter-spacing:0.03em;
+  }
+  [data-theme="dark"] .valid-flag{ color:var(--accent); }
+  table.inv-items{ width:100%; border-collapse:collapse; margin-bottom:16px; }
+  table.inv-items th{
+    text-transform:uppercase; font-size:10.5px; letter-spacing:0.05em; color:var(--ink-soft);
+    text-align:left; padding:0 8px 8px 0; border-bottom:1px solid var(--line);
+  }
+  table.inv-items td{ padding:8px 8px 8px 0; border-bottom:1px solid var(--line); font-size:13px; }
+  table.inv-items td.num, table.inv-items th.num{ text-align:right; font-variant-numeric:tabular-nums; }
+  .inv-totals{ display:flex; justify-content:flex-end; margin-bottom:24px; }
+  .inv-totals-box{ width:220px; }
+  .inv-totals-box .line{ display:flex; justify-content:space-between; padding:5px 0; font-size:13.5px; }
+  .inv-totals-box .line.grand{
+    border-top:1px solid var(--accent); font-weight:700; font-size:16px; padding-top:9px; margin-top:4px;
+  }
+  .inv-notes{ font-size:12px; color:var(--ink-soft); white-space:pre-line; margin-bottom:6px; }
+  .inv-empty{ color:var(--ink-soft); font-style:italic; text-align:center; padding:60px 0; font-size:13px; }
+  .sig{
+    position:absolute; bottom:16px; right:40px;
+    font-family:"Rajdhani", sans-serif; font-size:10px; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--ink-soft); opacity:0.55;
+  }
+
+  .hist-search{ margin-bottom:16px; max-width:340px; }
+  table.hist{ width:100%; border-collapse:collapse; }
+  table.hist th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.04em;
+    color:var(--ink-soft); padding:0 10px 10px 0; border-bottom:1px solid var(--line);
+  }
+  table.hist td{ padding:11px 10px 11px 0; border-bottom:1px solid var(--line); font-size:13.5px; }
+  table.hist tr:hover td{ background:var(--accent-soft); }
+  .empty-state{ color:var(--ink-soft); padding:30px 0; text-align:center; font-size:13.5px; }
+  .tag{
+    display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px;
+    background:var(--accent-soft); color:var(--accent-ink); font-weight:600;
+    font-family:"Rajdhani", sans-serif; letter-spacing:0.02em;
+  }
+  [data-theme="dark"] .tag{ color:var(--accent); }
+  .tag.expired{ background:var(--danger-soft); color:var(--danger); }
+
+  .toast{
+    position:fixed; bottom:24px; right:24px;
+    background:var(--accent-ink); color:#d6f4ef; padding:11px 18px;
+    border-radius:var(--radius); font-size:13px;
+    opacity:0; transform:translateY(8px); transition:opacity .2s, transform .2s;
+    pointer-events:none; z-index:50;
+  }
+  [data-theme="dark"] .toast{ background:var(--accent); color:#04322c; }
+  .toast.show{ opacity:1; transform:translateY(0); }
+
+  .settings-note{
+    font-size:12px; color:var(--accent-ink); background:var(--accent-soft);
+    border-radius:var(--radius); padding:10px 14px; margin-bottom:18px;
+  }
+  [data-theme="dark"] .settings-note{ color:var(--accent); }
+
+  @media print{
+    body *{ visibility:hidden; }
+    .quote-sheet, .quote-sheet *{ visibility:visible; }
+    .quote-sheet{ position:absolute; top:0; left:0; width:100%; box-shadow:none; border:none; padding:0 10mm; background:#fff; color:#161c1a; }
+    .sig{ color:#9a9a92; opacity:1; }
+  }
+
+  @media (max-width:920px){
+    .app{ grid-template-columns:1fr; }
+    .nav{ flex-direction:row; overflow-x:auto; padding:10px; align-items:center; }
+    .nav-brand{ display:none; }
+    .nav button{ border-left:none; border-bottom:3px solid transparent; white-space:nowrap; }
+    .nav button.active{ border-bottom:3px solid var(--accent); }
+    .nav-foot{ display:none; }
+    .theme-toggle{ margin:0 10px; }
+    .grid-two{ grid-template-columns:1fr; }
+    .field-row{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="nav">
+    <div class="nav-brand">Quote Wizard<span id="navBizName">No business set up yet</span></div>
+    <button data-view="new" class="active">New quote</button>
+    <button data-view="history">History</button>
+    <button data-view="settings">Business settings</button>
+    <div class="theme-toggle">
+      <button id="themeBtn" title="Toggle dark theme"></button>
+      <span id="themeLabel">Light</span>
+    </div>
+    <div class="nav-foot">Stored locally in this browser.<br>No data leaves this device.</div>
+  </div>
+
+  <div class="main">
+
+    <!-- NEW QUOTE VIEW -->
+    <div class="view active" id="view-new">
+      <h1>New quote</h1>
+      <div class="subhead">Fill in the details on the left, the quote builds itself on the right.</div>
+
+      <div class="grid-two">
+        <div>
+
+          <div class="panel">
+            <h2>Client</h2>
+            <div class="field client-picker">
+              <select id="clientSelect"></select>
+              <button class="btn btn-ghost btn-small" id="newClientBtn">New client</button>
+            </div>
+            <div id="clientForm" style="display:none; margin-top:12px;">
+              <div class="field">
+                <label>Client name or business name</label>
+                <input type="text" id="clientName" placeholder="e.g. Thabo Nkosi or Nkosi Traders">
+              </div>
+              <div class="field">
+                <label>Address</label>
+                <textarea id="clientAddress" placeholder="Street, suburb, city, postal code"></textarea>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-primary btn-small" id="saveClientBtn">Save client</button>
+                <button class="btn btn-ghost btn-small" id="cancelClientBtn">Cancel</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>Quote details</h2>
+            <div class="field-row">
+              <div class="field">
+                <label>Quote number</label>
+                <input type="text" id="quoNumber" readonly>
+              </div>
+              <div class="field">
+                <label>Quote date</label>
+                <input type="date" id="quoDate">
+              </div>
+            </div>
+            <div class="field">
+              <label>Valid until</label>
+              <input type="date" id="quoValid">
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>Items</h2>
+            <table class="items">
+              <thead>
+                <tr>
+                  <th class="col-desc">Description</th>
+                  <th class="col-qty">Qty</th>
+                  <th class="col-price">Price (R)</th>
+                  <th class="col-amt">Amount</th>
+                  <th class="col-del"></th>
+                </tr>
+              </thead>
+              <tbody id="itemsBody"></tbody>
+            </table>
+            <button class="btn btn-ghost btn-small" id="addItemBtn">Add line</button>
+            <div class="totals">
+              <div class="totals-box">
+                <div class="totals-line total"><span>Estimated total</span><span id="formTotal">R 0.00</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>Notes (optional)</h2>
+            <textarea id="quoNotes" placeholder="Scope notes, exclusions, or terms the client should see"></textarea>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" id="saveQuoteBtn">Save quote</button>
+            <button class="btn btn-ghost" id="printQuoteBtn">Print / Save as PDF</button>
+          </div>
+        </div>
+
+        <div class="preview-wrap">
+          <div class="quote-sheet" id="quoteSheet"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY VIEW -->
+    <div class="view" id="view-history">
+      <h1>Quote history</h1>
+      <div class="subhead">Every quote you have saved, searchable by client or number.</div>
+      <input type="text" class="hist-search" id="histSearch" placeholder="Search by client name or quote number">
+      <div id="histTableWrap"></div>
+    </div>
+
+    <!-- SETTINGS VIEW -->
+    <div class="view" id="view-settings">
+      <h1>Business settings</h1>
+      <div class="subhead">This appears as the letterhead on every quote you generate.</div>
+      <div class="settings-note">No banking details on a quote, since nothing is owed until it is accepted and becomes an invoice.</div>
+
+      <div class="panel" style="max-width:520px;">
+        <h2>Business details</h2>
+        <div class="field">
+          <label>Business or trading name</label>
+          <input type="text" id="bizName">
+        </div>
+        <div class="field">
+          <label>Address</label>
+          <textarea id="bizAddress"></textarea>
+        </div>
+        <div class="field">
+          <label>Phone or email (optional, for your own contact line)</label>
+          <input type="text" id="bizContact">
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="saveSettingsBtn">Save settings</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- theme ---------- */
+const THEME_KEY = "quoteWizardTheme_v1";
+function applyTheme(t){
+  document.documentElement.setAttribute("data-theme", t);
+  document.getElementById("themeLabel").textContent = t === "dark" ? "Dark" : "Light";
+  localStorage.setItem(THEME_KEY, t);
+}
+document.getElementById("themeBtn").addEventListener("click", ()=>{
+  const cur = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  applyTheme(cur);
+});
+applyTheme(localStorage.getItem(THEME_KEY) || "light");
+
+/* ---------- storage helpers ---------- */
+const STORE_KEY = "quoteWizardData_v1";
+function loadData(){
+  const raw = localStorage.getItem(STORE_KEY);
+  if(raw){ try{ return JSON.parse(raw); }catch(e){} }
+  return {
+    business:{ name:"", address:"", contact:"" },
+    clients:[],
+    quotes:[],
+    nextNumber:1
+  };
+}
+function saveData(){ localStorage.setItem(STORE_KEY, JSON.stringify(data)); }
+let data = loadData();
+
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(msg){
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> el.classList.remove("show"), 2200);
+}
+
+/* ---------- nav ---------- */
+document.querySelectorAll(".nav button[data-view]").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".nav button[data-view]").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("view-"+btn.dataset.view).classList.add("active");
+    if(btn.dataset.view === "history") renderHistory();
+  });
+});
+
+/* ---------- helpers ---------- */
+function fmt(n){
+  return "R " + (Number(n)||0).toLocaleString("en-ZA", {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function dueInDays(n){
+  const d = new Date(); d.setDate(d.getDate()+n);
+  return d.toISOString().slice(0,10);
+}
+function fmtDate(iso){
+  if(!iso) return "";
+  const d = new Date(iso+"T00:00:00");
+  return d.toLocaleDateString("en-ZA", {day:"2-digit", month:"short", year:"numeric"});
+}
+function isExpired(iso){
+  if(!iso) return false;
+  return new Date(iso+"T23:59:59") < new Date();
+}
+function escapeAttr(s){ return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
+function escapeHtml(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* ---------- draft state ---------- */
+let currentItems = [{desc:"", qty:1, price:0}];
+let selectedClientId = null;
+
+/* ---------- client picker ---------- */
+function renderClientSelect(){
+  const sel = document.getElementById("clientSelect");
+  sel.innerHTML = "";
+  const optBlank = document.createElement("option");
+  optBlank.value = "";
+  optBlank.textContent = data.clients.length ? "Select a saved client" : "No saved clients yet";
+  sel.appendChild(optBlank);
+  data.clients.forEach(c=>{
+    const o = document.createElement("option");
+    o.value = c.id; o.textContent = c.name;
+    sel.appendChild(o);
+  });
+  if(selectedClientId) sel.value = selectedClientId;
+}
+document.getElementById("clientSelect").addEventListener("change", (e)=>{
+  selectedClientId = e.target.value || null;
+  document.getElementById("clientForm").style.display = "none";
+  renderPreview();
+});
+document.getElementById("newClientBtn").addEventListener("click", ()=>{
+  document.getElementById("clientForm").style.display = "block";
+  document.getElementById("clientName").value = "";
+  document.getElementById("clientAddress").value = "";
+});
+document.getElementById("cancelClientBtn").addEventListener("click", ()=>{
+  document.getElementById("clientForm").style.display = "none";
+});
+document.getElementById("saveClientBtn").addEventListener("click", ()=>{
+  const name = document.getElementById("clientName").value.trim();
+  const addr = document.getElementById("clientAddress").value.trim();
+  if(!name){ toast("Client needs a name"); return; }
+  const client = { id: "c"+Date.now(), name, address: addr };
+  data.clients.push(client);
+  saveData();
+  selectedClientId = client.id;
+  renderClientSelect();
+  document.getElementById("clientForm").style.display = "none";
+  renderPreview();
+  toast("Client saved");
+});
+
+/* ---------- line items ---------- */
+function renderItemsTable(){
+  const body = document.getElementById("itemsBody");
+  body.innerHTML = "";
+  currentItems.forEach((item, i)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="col-desc"><input type="text" data-i="${i}" data-f="desc" value="${escapeAttr(item.desc)}" placeholder="What the work or item covers"></td>
+      <td class="col-qty"><input type="number" min="0" step="1" data-i="${i}" data-f="qty" value="${item.qty}"></td>
+      <td class="col-price"><input type="number" min="0" step="0.01" data-i="${i}" data-f="price" value="${item.price}"></td>
+      <td class="col-amt">${fmt(item.qty*item.price)}</td>
+      <td class="col-del"><button class="row-del" data-i="${i}" title="Remove line">&times;</button></td>
+    `;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll("input").forEach(inp=>{
+    inp.addEventListener("input", (e)=>{
+      const i = +e.target.dataset.i, f = e.target.dataset.f;
+      currentItems[i][f] = f==="desc" ? e.target.value : Number(e.target.value);
+      renderItemsTable();
+      renderPreview();
+    });
+  });
+  body.querySelectorAll(".row-del").forEach(btn=>{
+    btn.addEventListener("click", (e)=>{
+      const i = +e.target.dataset.i;
+      currentItems.splice(i,1);
+      if(currentItems.length===0) currentItems.push({desc:"", qty:1, price:0});
+      renderItemsTable();
+      renderPreview();
+    });
+  });
+  const total = currentItems.reduce((s,it)=> s + (it.qty*it.price), 0);
+  document.getElementById("formTotal").textContent = fmt(total);
+}
+document.getElementById("addItemBtn").addEventListener("click", ()=>{
+  currentItems.push({desc:"", qty:1, price:0});
+  renderItemsTable();
+});
+
+/* ---------- quote number ---------- */
+function currentQuoteNumber(){
+  return "QUO-" + String(data.nextNumber).padStart(4,"0");
+}
+
+/* ---------- preview ---------- */
+function renderPreview(){
+  const biz = data.business;
+  const client = data.clients.find(c=>c.id===selectedClientId);
+  const number = document.getElementById("quoNumber").value || currentQuoteNumber();
+  const date = document.getElementById("quoDate").value;
+  const valid = document.getElementById("quoValid").value;
+  const notes = document.getElementById("quoNotes").value;
+  const total = currentItems.reduce((s,it)=> s + (it.qty*it.price), 0);
+  const sheet = document.getElementById("quoteSheet");
+
+  if(!biz.name){
+    sheet.innerHTML = `<div class="inv-empty">Set up your business details under Business settings first, then this preview builds itself.</div>`;
+    return;
+  }
+
+  let rows = currentItems.map(it => `
+    <tr>
+      <td>${escapeHtml(it.desc) || "&nbsp;"}</td>
+      <td class="num">${it.qty}</td>
+      <td class="num">${fmt(it.price)}</td>
+      <td class="num">${fmt(it.qty*it.price)}</td>
+    </tr>
+  `).join("");
+
+  sheet.innerHTML = `
+    <div class="inv-top">
+      <div>
+        <div class="inv-biz-name">${escapeHtml(biz.name)}</div>
+        <div class="inv-biz-addr">${escapeHtml(biz.address)}${biz.contact ? "\n"+escapeHtml(biz.contact) : ""}</div>
+      </div>
+      <div class="inv-title">
+        <div class="label">Quote</div>
+        <div class="num">${escapeHtml(number)}</div>
+      </div>
+    </div>
+    <div class="inv-meta">
+      <div>
+        <div class="k">Prepared for</div>
+        <div>${client ? escapeHtml(client.name) : '<span style="opacity:0.6;">No client selected</span>'}</div>
+        ${client && client.address ? `<div style="white-space:pre-line;color:var(--ink-soft);">${escapeHtml(client.address)}</div>` : ""}
+      </div>
+      <div style="text-align:right;">
+        <div><span class="k">Date&nbsp;</span>${date ? fmtDate(date) : "&mdash;"}</div>
+        <div class="valid-flag">Valid until ${valid ? fmtDate(valid) : "&mdash;"}</div>
+      </div>
+    </div>
+    <table class="inv-items">
+      <thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Amount</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="inv-totals">
+      <div class="inv-totals-box">
+        <div class="line grand"><span>Estimated total</span><span>${fmt(total)}</span></div>
+      </div>
+    </div>
+    ${notes ? `<div class="inv-notes">${escapeHtml(notes)}</div>` : ""}
+    <div class="sig">Vuja Tsoaela</div>
+  `;
+}
+["quoDate","quoValid","quoNotes"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", renderPreview);
+});
+
+/* ---------- save quote ---------- */
+function resetDraft(){
+  currentItems = [{desc:"", qty:1, price:0}];
+  selectedClientId = null;
+  document.getElementById("quoNumber").value = currentQuoteNumber();
+  document.getElementById("quoDate").value = todayStr();
+  document.getElementById("quoValid").value = dueInDays(14);
+  document.getElementById("quoNotes").value = "";
+  renderClientSelect();
+  renderItemsTable();
+  renderPreview();
+}
+
+document.getElementById("saveQuoteBtn").addEventListener("click", ()=>{
+  if(!data.business.name){ toast("Add your business details first"); return; }
+  const client = data.clients.find(c=>c.id===selectedClientId);
+  if(!client){ toast("Select or add a client first"); return; }
+  const items = currentItems.filter(it=> it.desc.trim() !== "" || it.qty*it.price > 0);
+  if(items.length===0){ toast("Add at least one line item"); return; }
+
+  const number = document.getElementById("quoNumber").value;
+  const record = {
+    id: "quo"+Date.now(),
+    number,
+    date: document.getElementById("quoDate").value,
+    valid: document.getElementById("quoValid").value,
+    clientId: client.id,
+    clientSnapshot: { name: client.name, address: client.address },
+    items,
+    notes: document.getElementById("quoNotes").value,
+    total: items.reduce((s,it)=> s + (it.qty*it.price), 0)
+  };
+  data.quotes.unshift(record);
+  data.nextNumber += 1;
+  saveData();
+  toast("Quote " + number + " saved");
+  resetDraft();
+});
+
+document.getElementById("printQuoteBtn").addEventListener("click", ()=>{
+  if(!data.business.name){ toast("Add your business details first"); return; }
+  window.print();
+});
+
+/* ---------- history ---------- */
+function renderHistory(){
+  const wrap = document.getElementById("histTableWrap");
+  const term = (document.getElementById("histSearch").value||"").toLowerCase();
+  const rows = data.quotes.filter(q=>
+    q.number.toLowerCase().includes(term) ||
+    (q.clientSnapshot && q.clientSnapshot.name.toLowerCase().includes(term))
+  );
+  if(rows.length===0){
+    wrap.innerHTML = `<div class="empty-state">${data.quotes.length ? "No quotes match that search." : "No quotes saved yet. Create your first one under New quote."}</div>`;
+    return;
+  }
+  wrap.innerHTML = `
+    <table class="hist">
+      <thead><tr><th>Number</th><th>Client</th><th>Date</th><th>Valid until</th><th>Total</th><th></th></tr></thead>
+      <tbody>${rows.map(q=>`
+        <tr>
+          <td><span class="tag">${escapeHtml(q.number)}</span></td>
+          <td>${escapeHtml(q.clientSnapshot ? q.clientSnapshot.name : "")}</td>
+          <td>${fmtDate(q.date)}</td>
+          <td><span class="tag ${isExpired(q.valid) ? "expired" : ""}">${fmtDate(q.valid)}${isExpired(q.valid) ? " · expired" : ""}</span></td>
+          <td>${fmt(q.total)}</td>
+          <td><button class="btn btn-ghost btn-small" data-act="view" data-id="${q.id}">View / print</button></td>
+        </tr>
+      `).join("")}</tbody>
+    </table>
+  `;
+  wrap.querySelectorAll("[data-act=view]").forEach(btn=>{
+    btn.addEventListener("click", ()=> loadQuoteIntoView(btn.dataset.id));
+  });
+}
+document.getElementById("histSearch").addEventListener("input", renderHistory);
+
+function loadQuoteIntoView(id){
+  const q = data.quotes.find(i=>i.id===id);
+  if(!q) return;
+  currentItems = q.items.map(it=>({...it}));
+  selectedClientId = q.clientId;
+  document.querySelectorAll(".nav button[data-view]").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.querySelector('[data-view="new"]').classList.add("active");
+  document.getElementById("view-new").classList.add("active");
+  document.getElementById("quoNumber").value = q.number;
+  document.getElementById("quoDate").value = q.date;
+  document.getElementById("quoValid").value = q.valid;
+  document.getElementById("quoNotes").value = q.notes || "";
+  renderClientSelect();
+  renderItemsTable();
+  renderPreview();
+  toast("Loaded " + q.number + ", editing will not change the saved record");
+}
+
+/* ---------- settings ---------- */
+function loadSettingsForm(){
+  const b = data.business;
+  document.getElementById("bizName").value = b.name;
+  document.getElementById("bizAddress").value = b.address;
+  document.getElementById("bizContact").value = b.contact;
+}
+document.getElementById("saveSettingsBtn").addEventListener("click", ()=>{
+  data.business = {
+    name: document.getElementById("bizName").value.trim(),
+    address: document.getElementById("bizAddress").value.trim(),
+    contact: document.getElementById("bizContact").value.trim()
+  };
+  saveData();
+  document.getElementById("navBizName").textContent = data.business.name || "No business set up yet";
+  renderPreview();
+  toast("Settings saved");
+});
+
+/* ---------- init ---------- */
+function init(){
+  document.getElementById("navBizName").textContent = data.business.name || "No business set up yet";
+  loadSettingsForm();
+  resetDraft();
+  if(!data.business.name){
+    document.querySelectorAll(".nav button[data-view]").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+    document.querySelector('[data-view="settings"]').classList.add("active");
+    document.getElementById("view-settings").classList.add("active");
+  }
+}
+init();
+</script>
+</body>
+</html>
